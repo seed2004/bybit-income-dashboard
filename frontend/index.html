@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bybit Short-DTE Income Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --amber: #d29922;
+    --accent: #58a6ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 18px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  .disclaimer {
+    background: #2d2308;
+    border-bottom: 1px solid var(--amber);
+    color: #e3b341;
+    padding: 8px 24px;
+    font-size: 12.5px;
+  }
+
+  /* ── Tab bar ── */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    background: var(--bg);
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 16px 9px;
+    margin-bottom: -1px;
+    border-radius: 0;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── Shared layout ── */
+  .layout { display: flex; gap: 16px; padding: 16px 24px; align-items: flex-start; flex-wrap: wrap; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .filters { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; gap: 12px; }
+  .filters label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .filters .row { display: flex; gap: 8px; }
+  .filters .row > div { flex: 1; }
+  select, input[type=number], input[type=password], input[type=text] {
+    width: 100%;
+    background: #0d1117;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+  select[multiple] { height: 92px; }
+  .checkbox-group label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+  button {
+    background: var(--accent);
+    color: #04101f;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  button:hover { opacity: 0.9; }
+  .btn-secondary {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-danger {
+    background: #3b1218;
+    color: var(--red);
+    border: 1px solid #6e2028;
+  }
+
+  /* ── Results ── */
+  .results { flex: 1; min-width: 0; }
+  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .results-header .count { color: var(--muted); font-size: 12.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 7px 9px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  th { color: var(--muted); font-weight: 600; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--panel); }
+  th:hover { color: var(--accent); }
+  tbody tr:hover { background: #1c232c; }
+  .pill { display: inline-block; padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .pill-defined { background: #0d2818; color: var(--green); }
+  .pill-undefined { background: #2d1414; color: var(--red); }
+  .legs { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
+  .yield-pos { color: var(--green); font-weight: 600; }
+  .illiquid-flag { color: var(--red); font-size: 11px; }
+  .empty, .loading, .error { padding: 40px; text-align: center; color: var(--muted); }
+  .error { color: var(--red); }
+  footer { padding: 16px 24px; color: var(--muted); font-size: 11.5px; }
+  a { color: var(--accent); }
+
+  /* ── Settings tab ── */
+  .settings-card {
+    max-width: 480px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .settings-card h2 { margin: 0; font-size: 15px; }
+  .settings-card p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.55; }
+  .field-label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; }
+  .input-row { display: flex; gap: 6px; align-items: stretch; }
+  .input-row input { flex: 1; min-width: 0; }
+  .btn-toggle {
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+  .btn-toggle:hover { color: var(--text); }
+  .action-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .cred-status {
+    font-size: 12.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: none;
+  }
+  .cred-status.ok  { background: #0d2818; color: var(--green); display: inline-block; }
+  .cred-status.err { background: #2d1414; color: var(--red);   display: inline-block; }
+  .cred-status.info { background: #0c1929; color: var(--accent); display: inline-block; }
+  .current-key-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    display: none;
+  }
+  .current-key-box.visible { display: block; }
+  .current-key-box .kv { display: flex; gap: 8px; margin-bottom: 4px; }
+  .current-key-box .kv:last-child { margin-bottom: 0; }
+  .current-key-box .k { color: var(--muted); min-width: 90px; }
+  .current-key-box .v { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+  .warning-note {
+    font-size: 11.5px;
+    color: var(--muted);
+    background: #2d2308;
+    border: 1px solid #5a4008;
+    border-radius: 6px;
+    padding: 9px 12px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⏱ Short-DTE Income Dashboard</h1>
+  <span class="sub">Bybit options · public market data · cashflow strategy screener</span>
+</header>
+
+<div class="disclaimer">
+  ⚠ Informational tool only — not financial advice. Probability-of-profit and yield figures are model
+  estimates (Black-Scholes, lognormal assumption) based on each option's live mark IV, not guarantees.
+  No orders are placed by this dashboard yet — review every candidate and execute manually on Bybit.
+</div>
+
+<nav class="tab-bar">
+  <button class="tab-btn active" data-tab="screener">Screener</button>
+  <button class="tab-btn" data-tab="settings">⚙ Settings</button>
+</nav>
+
+<!-- ── Screener tab ─────────────────────────────────────── -->
+<div id="tab-screener" class="tab-content active">
+  <div class="layout">
+    <div class="panel filters">
+      <div>
+        <label>Underlyings</label>
+        <div class="checkbox-group" id="underlyingChecks"></div>
+      </div>
+
+      <div>
+        <label>Strategies</label>
+        <select id="strategies" multiple></select>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Min DTE</label>
+          <input type="number" id="minDte" value="0" min="0" step="1" />
+        </div>
+        <div>
+          <label>Max DTE</label>
+          <input type="number" id="maxDte" value="7" min="0" step="1" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Min |delta|</label>
+          <input type="number" id="minDelta" value="0.10" min="0" max="1" step="0.01" />
+        </div>
+        <div>
+          <label>Max |delta|</label>
+          <input type="number" id="maxDelta" value="0.35" min="0" max="1" step="0.01" />
+        </div>
+      </div>
+
+      <div>
+        <label>Spread width (# strikes)</label>
+        <input type="number" id="widthStrikes" value="2" min="1" max="20" step="1" />
+      </div>
+
+      <div>
+        <label>Sort by</label>
+        <select id="sortBy">
+          <option value="annualized_yield_pct">Annualized yield %</option>
+          <option value="probability_of_profit">Probability of profit</option>
+          <option value="net_credit">Net credit</option>
+          <option value="dte_days">DTE</option>
+          <option value="max_loss">Max loss</option>
+        </select>
+      </div>
+
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="includeIlliquid" /> Include illiquid candidates</label>
+      </div>
+
+      <button id="refreshBtn">Scan chain →</button>
+    </div>
+
+    <div class="panel results">
+      <div class="results-header">
+        <strong>Trade ideas</strong>
+        <span class="count" id="resultCount"></span>
+      </div>
+      <div id="resultsContainer"><div class="empty">Click "Scan chain" to fetch live suggestions.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Settings tab ─────────────────────────────────────── -->
+<div id="tab-settings" class="tab-content">
+  <div class="layout">
+    <div class="panel settings-card">
+      <h2>API Credentials</h2>
+      <p>
+        Store your Bybit API key and secret for Phase 2 features (account balance, open positions,
+        order placement). Not used in the current build — the screener runs on public data only.<br><br>
+        Credentials are saved to a <code>.env</code> file on the server machine and loaded automatically
+        on the next server start. They are never transmitted outside your local machine.
+      </p>
+
+      <!-- Current status -->
+      <div id="currentKeyBox" class="current-key-box">
+        <div class="kv"><span class="k">API Key</span><span class="v" id="currentKeyDisplay">—</span></div>
+        <div class="kv"><span class="k">Secret</span><span class="v">••••••••••••••••</span></div>
+        <div class="kv"><span class="k">Status</span><span class="v" style="color:var(--green)">Saved ✓</span></div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Key input -->
+      <div>
+        <label class="field-label" for="apiKey">API Key</label>
+        <div class="input-row">
+          <input type="password" id="apiKey" placeholder="Paste your Bybit API key" autocomplete="off" />
+          <button type="button" class="btn-toggle" data-target="apiKey">Show</button>
+        </div>
+      </div>
+
+      <!-- Secret input -->
+      <div>
+        <label class="field-label" for="apiSecret">API Secret</label>
+        <div class="input-row">
+          <input type="password" id="apiSecret" placeholder="Paste your Bybit API secret" autocomplete="off" />
+          <button type="button" class="btn-toggle" data-target="apiSecret">Show</button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="action-row">
+        <button id="saveCredsBtn">Save credentials</button>
+        <button type="button" class="btn-danger" id="clearCredsBtn">Clear</button>
+        <span class="cred-status" id="credStatus"></span>
+      </div>
+
+      <div class="warning-note">
+        ⚠ Use a key with the minimum permissions you need (read-only for account data; trade permission only when Phase 2 order placement is enabled).
+        Never use a key with withdrawal permissions. Start on Bybit <strong>testnet</strong> before pointing mainnet keys at this tool.
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Data: Bybit V5 public market endpoints (instruments-info, tickers). No API keys used for the screener.
+  Underlying spot/index price, mark IV and greeks are as reported by Bybit at request time.
+</footer>
+
+<script>
+const API = "";
+let currentSort = { key: "annualized_yield_pct", dir: -1 };
+
+// ── Tab switching ──────────────────────────────────────────
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "settings") loadCredentialStatus();
+  });
+});
+
+// ── Show/hide password toggles ─────────────────────────────
+document.querySelectorAll(".btn-toggle").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const input = document.getElementById(btn.dataset.target);
+    const showing = input.type === "text";
+    input.type = showing ? "password" : "text";
+    btn.textContent = showing ? "Show" : "Hide";
+  });
+});
+
+// ── Screener: load meta ────────────────────────────────────
+async function loadMeta() {
+  const res = await fetch(`${API}/api/meta`);
+  const meta = await res.json();
+
+  const ucDiv = document.getElementById("underlyingChecks");
+  ucDiv.innerHTML = meta.underlyings.map(u =>
+    `<label><input type="checkbox" class="u-check" value="${u}" checked> ${u}</label>`
+  ).join("");
+
+  const stratSel = document.getElementById("strategies");
+  const niceNames = {
+    cash_secured_put: "Cash-secured short put",
+    covered_call: "Covered call",
+    credit_spread: "Credit spread (bull put / bear call)",
+    iron_condor: "Iron condor / short strangle",
+  };
+  stratSel.innerHTML = meta.strategies.map(s =>
+    `<option value="${s}" selected>${niceNames[s] || s}</option>`
+  ).join("");
+
+  document.getElementById("minDte").value = meta.defaults.min_dte;
+  document.getElementById("maxDte").value = meta.defaults.max_dte;
+  document.getElementById("minDelta").value = meta.defaults.min_abs_delta;
+  document.getElementById("maxDelta").value = meta.defaults.max_abs_delta;
+  document.getElementById("widthStrikes").value = meta.defaults.width_strikes;
+}
+
+// ── Screener: format helpers ───────────────────────────────
+function fmtPct(v) { return v === null || v === undefined ? "—" : (v * 100 >= 1000 ? v.toFixed(0) : v.toFixed(2)) + "%"; }
+function fmtYield(v) { return v === null || v === undefined ? "—" : v.toFixed(1) + "%"; }
+function fmtNum(v, d = 2) { return v === null || v === undefined ? "—" : Number(v).toFixed(d); }
+function legsToString(legs) {
+  return legs.map(l => `${l.side === "SELL" ? "-" : "+"}${l.strike}${l.type}`).join(" / ");
+}
+
+function renderTable(suggestions) {
+  const container = document.getElementById("resultsContainer");
+  if (!suggestions.length) {
+    container.innerHTML = `<div class="empty">No candidates matched these filters. Try widening the delta range or DTE window.</div>`;
+    return;
+  }
+  const rows = suggestions.map(s => `
+    <tr>
+      <td>${s.strategy}</td>
+      <td>${s.underlying}</td>
+      <td>${new Date(s.expiry).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</td>
+      <td>${fmtNum(s.dte_days, 1)}</td>
+      <td class="legs">${legsToString(s.legs)}</td>
+      <td>${fmtNum(s.net_credit, 4)}</td>
+      <td>${s.undefined_risk ? '<span class="pill pill-undefined">undefined</span>' : fmtNum(s.max_loss, 2)}</td>
+      <td>${s.breakevens.map(b => fmtNum(b, 0)).join(" / ")}</td>
+      <td>${fmtPct(s.probability_of_profit)}</td>
+      <td class="yield-pos">${fmtYield(s.annualized_yield_pct)}</td>
+      <td>${s.illiquid ? '<span class="illiquid-flag">thin</span>' : ""}</td>
+    </tr>
+  `).join("");
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th data-key="strategy">Strategy</th>
+          <th data-key="underlying">UL</th>
+          <th data-key="expiry">Expiry</th>
+          <th data-key="dte_days">DTE</th>
+          <th>Legs</th>
+          <th data-key="net_credit">Credit</th>
+          <th data-key="max_loss">Max loss</th>
+          <th>Breakeven</th>
+          <th data-key="probability_of_profit">POP</th>
+          <th data-key="annualized_yield_pct">Ann. yield</th>
+          <th>Liquidity</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  container.querySelectorAll("th[data-key]").forEach(th => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.key;
+      currentSort.dir = currentSort.key === key ? -currentSort.dir : -1;
+      currentSort.key = key;
+      fetchSuggestions();
+    });
+  });
+}
+
+async function fetchSuggestions() {
+  const container = document.getElementById("resultsContainer");
+  container.innerHTML = `<div class="loading">Fetching live chain from Bybit…</div>`;
+  document.getElementById("resultCount").textContent = "";
+
+  const underlyings = Array.from(document.querySelectorAll(".u-check:checked")).map(c => c.value).join(",");
+  const strategies = Array.from(document.getElementById("strategies").selectedOptions).map(o => o.value).join(",");
+  const params = new URLSearchParams({
+    underlying: underlyings || "BTC,ETH",
+    strategies,
+    min_dte: document.getElementById("minDte").value,
+    max_dte: document.getElementById("maxDte").value,
+    min_abs_delta: document.getElementById("minDelta").value,
+    max_abs_delta: document.getElementById("maxDelta").value,
+    width_strikes: document.getElementById("widthStrikes").value,
+    sort_by: currentSort.key,
+    include_illiquid: document.getElementById("includeIlliquid").checked,
+    limit: 200,
+  });
+
+  try {
+    const res = await fetch(`${API}/api/suggestions?${params.toString()}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    let suggestions = data.suggestions;
+    suggestions.sort((a, b) => {
+      const av = a[currentSort.key] ?? -1, bv = b[currentSort.key] ?? -1;
+      return currentSort.dir * (av < bv ? -1 : av > bv ? 1 : 0);
+    });
+    document.getElementById("resultCount").textContent =
+      `${data.count} shown (of ${data.total_before_limit} found)`;
+    renderTable(suggestions);
+  } catch (e) {
+    container.innerHTML = `<div class="error">Failed to fetch suggestions: ${e.message}<br><br>
+      If this is a connection error, make sure the machine running this server has internet
+      access to api.bybit.com (sandboxed dev environments often block it).</div>`;
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", fetchSuggestions);
+
+// ── Settings: credentials ──────────────────────────────────
+function setCredStatus(msg, type) {
+  const el = document.getElementById("credStatus");
+  el.textContent = msg;
+  el.className = `cred-status ${type}`;
+}
+
+async function loadCredentialStatus() {
+  try {
+    const res = await fetch(`${API}/api/settings/credentials`);
+    const data = await res.json();
+    const box = document.getElementById("currentKeyBox");
+    if (data.configured) {
+      document.getElementById("currentKeyDisplay").textContent = data.key_prefix;
+      box.classList.add("visible");
+    } else {
+      box.classList.remove("visible");
+    }
+    // Pre-fill key from localStorage (secret is never stored client-side)
+    const savedKey = localStorage.getItem("bybit_api_key_hint") || "";
+    if (savedKey) document.getElementById("apiKey").value = savedKey;
+  } catch {
+    // server unreachable — silent
+  }
+}
+
+document.getElementById("saveCredsBtn").addEventListener("click", async () => {
+  const key = document.getElementById("apiKey").value.trim();
+  const secret = document.getElementById("apiSecret").value.trim();
+  if (!key || !secret) {
+    setCredStatus("Both fields are required.", "err");
+    return;
+  }
+  setCredStatus("Saving…", "info");
+  try {
+    const res = await fetch(`${API}/api/settings/credentials`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ api_key: key, api_secret: secret }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+    // Store only the key as a hint (never store the secret in browser)
+    localStorage.setItem("bybit_api_key_hint", key);
+    document.getElementById("apiSecret").value = "";
+    document.getElementById("apiSecret").type = "password";
+    document.querySelectorAll(".btn-toggle").forEach(b => { if (b.dataset.target === "apiSecret") b.textContent = "Show"; });
+    setCredStatus("Saved ✓", "ok");
+    loadCredentialStatus();
+  } catch (e) {
+    setCredStatus("Error: " + e.message, "err");
+  }
+});
+
+document.getElementById("clearCredsBtn").addEventListener("click", async () => {
+  if (!confirm("Remove the stored API credentials?")) return;
+  try {
+    const res = await fetch(`${API}/api/settings/credentials`, { method: "DELETE" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    localStorage.removeItem("bybit_api_key_hint");
+    document.getElementById("apiKey").value = "";
+    document.getElementById("apiSecret").value = "";
+    setCredStatus("Cleared.", "info");
+    loadCredentialStatus();
+  } catch (e) {
+    setCredStatus("Error: " + e.message, "err");
+  }
+});
+
+// ── Boot ───────────────────────────────────────────────────
+loadMeta();
+</script>
+
+</body>
+</html>
