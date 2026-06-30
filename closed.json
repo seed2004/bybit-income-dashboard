@@ -1,0 +1,68 @@
+{
+  "closed": [
+    {
+      "id": "8f05934d-009f-4863-89d3-f6a779771025",
+      "created_at": "2026-06-28T09:19:48.400777+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-06-29",
+      "strike": 57000.0,
+      "type": "P",
+      "side": "SELL",
+      "qty": 0.02,
+      "entry_price": 15.0,
+      "note": "imported from Bybit",
+      "close_price": 0.0,
+      "realized_pnl": 0.3,
+      "opened_at": "2026-06-28T09:19:48.400777+00:00",
+      "closed_at": "2026-06-29T11:05:19.418116+00:00"
+    },
+    {
+      "id": "81f2bf0e-76c6-4486-ac13-d72d64ef7772",
+      "created_at": "2026-06-28T09:19:48.382843+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-06-30",
+      "strike": 64000.0,
+      "type": "C",
+      "side": "SELL",
+      "qty": 0.02,
+      "entry_price": 20.0,
+      "note": "imported from Bybit",
+      "close_price": 0.0,
+      "realized_pnl": 0.4,
+      "opened_at": "2026-06-28T09:19:48.382843+00:00",
+      "closed_at": "2026-06-30T10:22:28.029553+00:00"
+    },
+    {
+      "id": "5065486b-e459-48b1-86ac-da062f9efbf9",
+      "created_at": "2026-06-28T09:19:48.388657+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-06-30",
+      "strike": 57000.0,
+      "type": "P",
+      "side": "SELL",
+      "qty": 0.04,
+      "entry_price": 96.25,
+      "note": "imported from Bybit",
+      "close_price": 0.0,
+      "realized_pnl": 3.85,
+      "opened_at": "2026-06-28T09:19:48.388657+00:00",
+      "closed_at": "2026-06-30T10:22:31.676479+00:00"
+    },
+    {
+      "id": "aeebee9a-342c-47a6-8b57-654e8d63f43f",
+      "created_at": "2026-06-29T03:54:28.656773+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-06-30",
+      "strike": 55000.0,
+      "type": "P",
+      "side": "SELL",
+      "qty": 0.01,
+      "entry_price": 30.0,
+      "note": "imported from Bybit",
+      "close_price": 0.0,
+      "realized_pnl": 0.3,
+      "opened_at": "2026-06-29T03:54:28.656773+00:00",
+      "closed_at": "2026-06-30T10:22:37.241573+00:00"
+    }
+  ]
+}

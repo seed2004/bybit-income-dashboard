@@ -1,0 +1,88 @@
+{
+  "legs": [
+    {
+      "id": "2cb32cee-97c2-406d-8860-13e00036fcca",
+      "created_at": "2026-06-28T09:19:48.392708+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-07-03",
+      "strike": 64000.0,
+      "type": "C",
+      "side": "SELL",
+      "qty": 0.01,
+      "entry_price": 125.0,
+      "note": "imported from Bybit"
+    },
+    {
+      "id": "ec45e7ba-bbdb-423d-8bbd-b8cd4b8cd0f5",
+      "created_at": "2026-06-28T09:19:48.396781+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-07-03",
+      "strike": 56000.0,
+      "type": "P",
+      "side": "SELL",
+      "qty": 0.01,
+      "entry_price": 265.0,
+      "note": "imported from Bybit"
+    },
+    {
+      "id": "99a79aed-11ab-47ef-80b6-e5d6d254a763",
+      "created_at": "2026-06-28T09:19:48.404774+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-07-03",
+      "strike": 68000.0,
+      "type": "C",
+      "side": "SELL",
+      "qty": 0.01,
+      "entry_price": 20.0,
+      "note": "imported from Bybit"
+    },
+    {
+      "id": "6a6e8ee0-82e2-4389-9507-d9cae3e709d7",
+      "created_at": "2026-06-28T09:19:48.408707+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-07-03",
+      "strike": 55000.0,
+      "type": "P",
+      "side": "SELL",
+      "qty": 0.01,
+      "entry_price": 210.0,
+      "note": "imported from Bybit"
+    },
+    {
+      "id": "db8daced-d02f-433c-9df7-a0fa7cbd5cea",
+      "created_at": "2026-06-29T07:34:35.658496+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-07-01",
+      "strike": 57000.0,
+      "type": "P",
+      "side": "SELL",
+      "qty": 0.02,
+      "entry_price": 140.0,
+      "note": "imported from Bybit"
+    },
+    {
+      "id": "209ea137-d862-4300-a70e-e5f0e9eb59bc",
+      "created_at": "2026-06-29T07:54:43.881662+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-09-25",
+      "strike": 40000.0,
+      "type": "P",
+      "side": "SELL",
+      "qty": 0.01,
+      "entry_price": 575.0,
+      "note": "imported from Bybit"
+    },
+    {
+      "id": "5acece9e-b06b-4b9b-bb10-ecc8b13f0642",
+      "created_at": "2026-06-29T10:55:41.289717+00:00",
+      "underlying": "BTC",
+      "expiry": "2026-07-01",
+      "strike": 56000.0,
+      "type": "P",
+      "side": "SELL",
+      "qty": 0.01,
+      "entry_price": 75.0,
+      "note": "imported from Bybit"
+    }
+  ]
+}
